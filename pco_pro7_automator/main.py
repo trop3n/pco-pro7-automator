@@ -15,4 +15,13 @@ SERVICE_DATE = (datetime.now() + timedelta(days=7)).date()
 
 # Planning Center API Client
 class PlanningCenterClient:
-    
+    def __init__(self):
+        self.base_url = "https://api.planningcenteronline.com/services/v2"
+        self.auth = (PLANNING_CENTER_APP_ID, PLANNING_CENTER_SECRET)
+
+    def get_service_plan(self. date):
+        endpoint = f"{self.base_url}/service_plans"
+        params = {'filter': f'future|{date}'}
+        response = requests.get(endpoint, params=params, auth=self.auth)
+        response.raise_for_status()
+        return response.json()
