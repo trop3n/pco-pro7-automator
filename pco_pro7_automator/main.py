@@ -25,3 +25,22 @@ class PlanningCenterClient:
         response = requests.get(endpoint, params=params, auth=self.auth)
         response.raise_for_status()
         return response.json()
+    
+    def get_song_details(self, song_id):
+        endpoint = f"{self.base_url}/songs/{song_id}"
+        response = requests.get(endpoint, auth=self.auth)
+        return response.json()
+    
+# ProPresenter API Client
+class ProPresenterClient:
+    def __init__(self):
+        self.base_url = "http://propresenter.local:5000/api/v1"
+        self.headers = {'Authorization': f'Bearer {PROPRESENTER_API_KEY}'}
+
+    def create_playlist(self, playlist_name):
+        endpoint - f"{self.base_url}/playlists"
+        data = {'name': playlist_name}
+        response = requests.post(endpoint, json=data, headers=self.headers)
+        return response.json()
+    
+    def add_slide_group(self, playlist_id, song_data):
