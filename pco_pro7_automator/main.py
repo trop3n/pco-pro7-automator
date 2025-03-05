@@ -38,9 +38,47 @@ class ProPresenterClient:
         self.headers = {'Authorization': f'Bearer {PROPRESENTER_API_KEY}'}
 
     def create_playlist(self, playlist_name):
-        endpoint - f"{self.base_url}/playlists"
+        endpoint = f"{self.base_url}/playlists"
         data = {'name': playlist_name}
         response = requests.post(endpoint, json=data, headers=self.headers)
         return response.json()
     
     def add_slide_group(self, playlist_id, song_data):
+        endpoint = f"{self.base_url}/playlists/{playlist_id}/items"
+        response= requests.post(endpoint, json=self._format_slide_data(song_data), headers=self.headers)
+        return response.json()
+
+    def _format_slide_data(self, song_data):
+        return {
+            'type': 'slide_group',
+            'name': song_data['title'],
+            'slides': self._parse_lyrics(song_data['lyrics'])
+        }
+    
+# Main Workflow
+def main():
+    # init clients
+    pc_client = PlanningCenterClient()
+    prop_client = ProPresenterClient()
+
+    try:
+        # get service plan data
+        service_plan = pc_client.get_service_plan(SERVICE_DATE)
+
+        # create new playlist in ProPresenter
+        playlist = prop_client.create_playlist(f"Service - {SERVICE_DATE}")
+
+        # process each item in service plan
+        for item in service_plan['data']:
+            if item['type'] == 'Song':
+                song_details = pc_client.get_song_details(item['relationships']['song']['data']['id'])
+                prop_client.add_slide_group(playlist['id'], song_details)
+        logging.info(f"Successfully created playlist {playlist['name']}")
+    
+    except Exception as e:
+        logging.error(f"Error processing service plan: {str(e)}")
+
+# Scheduling
+if __name__ == "__main__":
+    # For production: Use cron jon or AWS EventBridge
+    main() # Test immediate execution
